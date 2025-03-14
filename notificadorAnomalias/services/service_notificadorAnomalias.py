@@ -8,7 +8,7 @@ import django
 
 rabbit_host = 'localhost'
 rabbit_user = 'hospital_user'
-rabbit_password = 'clave123'
+rabbit_password = 'isis2503'
 exchange = 'monitoring_measurements'
 topics = ['#']
 
@@ -31,10 +31,10 @@ for topic in topics:
     channel.queue_bind(
         exchange=exchange, queue=queue_name, routing_key=topic)
 
-def send_email(patient:str):
+def send_email(patient:str,correo_medico:str,id):
     subject = 'Anomalía detectadas en un paciente'
-    message = 'Tu paciente'+patient+'ha presentado una anomalía en sus mediciones'
-    recepient = "js.ardilal1@uniandes.edu.co"
+    message = 'Tu paciente'+patient+'con id: '+id+' ha presentado una anomalía en sus mediciones'
+    recepient = correo_medico
     send_mail(subject, message, EMAIL_HOST_USER, [recepient])
 
 print('> Waiting measurements. To exit press CTRL+C')
@@ -42,8 +42,8 @@ print('> Waiting measurements. To exit press CTRL+C')
 def callback(ch, method, properties, body):
     payload = json.loads(body.decode('utf8').replace("'", '"'))
     topic = method.routing_key.split('.')
-    send_email(topic[0])
-    print("Measurement :%r" % (str(payload)))
+    send_email(topic[0],topic[1],topic[2])
+    print("Evento detectado :%r" % (str(payload)))
 
 channel.basic_consume(
     queue=queue_name, on_message_callback=callback, auto_ack=True)
